@@ -218,6 +218,76 @@ LISTEN 0 128 [::]:3000 *:*'''
                 portal.docker_request('POST', '/containers/id/start')
             self.assertEqual(connection.return_value.close.call_count, 2)
 
+    @unittest.skipUnless(os.name == 'posix', 'Installer check requires Linux / WSL')
+    def test_installer_manages_docker_permission_and_preserves_config(self):
+        source = Path(__file__).parent
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ('portal.py', 'index.html', 'service-portal.service'):
+                (root / name).write_bytes((source / name).read_bytes())
+            script = (source / 'install.sh').read_text()
+            script = script.replace('if [[ "${EUID}" -ne 0 ]]; then', 'if false; then')
+            for original, replacement in [('/opt/service-portal', root / 'app'),
+                                          ('/etc/service-portal', root / 'config'),
+                                          ('/etc/systemd/system/service-portal', root / 'units/service-portal'),
+                                          ('/var/run/docker.sock', root / 'docker.sock')]:
+                script = script.replace(original, str(replacement))
+            (root / 'install.sh').write_text(script)
+            (root / 'units').mkdir()
+            commands = root / 'bin'
+            commands.mkdir()
+            stubs = {
+                'ss': 'exit 0',
+                'sleep': 'exit 0',
+                'apt-get': 'exit 99',
+                'getent': 'if [ "$1" = group ] && [ "${TEST_MISSING_GROUP:-0}" = 1 ]; then exit 1; fi\nexit 0',
+                'systemctl': 'printf "%s\\n" "$*" >> "$TEST_SYSTEMCTL_LOG"',
+            }
+            for name, command in stubs.items():
+                executable = commands / name
+                executable.write_text('#!/bin/sh\n' + command + '\n')
+                executable.chmod(0o755)
+            env = dict(os.environ, PATH=str(commands) + os.pathsep + os.environ['PATH'],
+                       TEST_SYSTEMCTL_LOG=str(root / 'systemctl.log'))
+            self.cfg['docker_enabled'] = True
+            (root / 'config.json').write_text(json.dumps(self.cfg))
+
+            def install(**changes):
+                return subprocess.run(['bash', str(root / 'install.sh')], env=dict(env, **changes),
+                                      capture_output=True, text=True, timeout=20)
+
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as docker_socket:
+                docker_socket.bind(str(root / 'docker.sock'))
+                result = install()
+                self.assertEqual(result.returncode, 0, result.stderr)
+                override = root / 'units/service-portal.service.d/90-service-portal-docker.conf'
+                self.assertIn('SupplementaryGroups=docker', override.read_text())
+                runtime_config = root / 'config/config.json'
+                original_config = runtime_config.read_bytes()
+                self.cfg['docker_enabled'] = False
+                (root / 'config.json').write_text(json.dumps(self.cfg))
+                self.assertEqual(install().returncode, 0)
+                self.assertEqual(runtime_config.read_bytes(), original_config)
+                self.assertTrue(override.exists())
+                manual = override.with_name('docker.conf')
+                manual.write_text('# administrator override\n')
+                runtime_config.write_text(json.dumps(self.cfg))
+                self.assertEqual(install().returncode, 0)
+                self.assertFalse(override.exists())
+                self.assertTrue(manual.exists())
+                self.cfg['docker_enabled'] = True
+                runtime_config.write_text(json.dumps(self.cfg))
+                previous_log = (root / 'systemctl.log').read_bytes()
+                result = install(TEST_MISSING_GROUP='1')
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('docker 用户组不存在', result.stderr)
+                self.assertEqual((root / 'systemctl.log').read_bytes(), previous_log)
+            (root / 'docker.sock').unlink()
+            result = install()
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('请先启动 Docker Engine', result.stderr)
+            self.assertEqual((root / 'systemctl.log').read_bytes(), previous_log)
+
 
 if __name__ == '__main__':
     unittest.main()
