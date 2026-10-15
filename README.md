@@ -122,7 +122,7 @@ Docker 运维是独立的 `/docker` 页面，直接输入服务器地址加 `/do
 
 默认关闭 Docker API，安装脚本不会授予 Docker 权限。启用需要宿主机已经安装并运行 Docker Engine，socket 为 `/var/run/docker.sock`；暂不支持 rootless Docker 和远程 Docker。无需安装额外 Python 包或 Docker CLI。
 
-Docker socket 控制权限通常等同于主机 root 权限。运维页面及所有 Docker API 都需要令牌；容器名称、镜像、日志不会通过匿名服务发现 API 返回。远程使用请通过 HTTPS 反向代理访问，页面拒绝通过非本机 HTTP 连接发送令牌。普通服务导航仍可使用 HTTP。
+Docker socket 控制权限通常等同于主机 root 权限。所有 Docker API 都需要令牌；容器名称、镜像、日志不会通过匿名服务发现 API 返回。页面允许通过内网 IPv4 地址（10.0.0.0/8、172.16.0.0/12、192.168.0.0/16）或 localhost / 回环地址使用 HTTP 令牌登录，例如 `http://10.22.29.66/docker`。HTTP 不加密令牌，仅在可信内网使用；公网 IP、域名（包括内网域名）仍需 HTTPS。该页面检查不替代防火墙或代理的访问限制，也不会为后端 API 自动限制来源 IP。普通服务导航仍可使用 HTTP。
 
 1. 上传新版文件并运行 `sudo bash install.sh`。编辑 `/etc/service-portal/config.json`，增加或修改 `"docker_enabled": true`。旧配置未包含该字段时仍默认关闭。
 2. 创建仅 root 可读的令牌文件（文件已存在时会报错，不会覆盖原令牌）：
@@ -160,6 +160,7 @@ Docker socket 控制权限通常等同于主机 root 权限。运维页面及所
 
 ```bash
 python3 -m unittest -v
+node test_ui.js  # 可选：前端访问地址策略检查，仅开发验证需要 Node.js
 sudo ss -H -ltn
 curl http://127.0.0.1/api/services
 sudo journalctl -u service-portal -n 100 --no-pager
