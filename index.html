@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>本机服务导航</title>
+<style>
+:root{font-family:system-ui,"Microsoft YaHei",sans-serif;color:#203c3a;background:#f5f7f6;font-synthesis:none;--muted:#637874;--accent:#137565;--line:#dce5e1}
+*{box-sizing:border-box}body{max-width:1180px;margin:auto;padding:38px 28px}button,input{font:inherit}button,a{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}a{color:var(--accent)}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #249b89;outline-offset:4px}
+.topbar,.brand,.host,.heading,.tools,.filters,.card-top,.card-bottom{display:flex;align-items:center}.topbar{justify-content:space-between;padding-bottom:26px;border-bottom:1px solid var(--line);gap:16px}.brand{gap:12px;font-weight:650;font-size:14px}.logo{display:grid;place-items:center;width:34px;height:34px;background:var(--accent);color:white;border-radius:10px;font-size:20px}.host{gap:8px;color:var(--muted);font-size:12px;overflow-wrap:anywhere}.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0}.heading{justify-content:space-between;gap:24px;margin:42px 0 28px}h1{font-size:32px;letter-spacing:-1px;margin:0 0 12px}p{line-height:1.7}.intro{color:var(--muted);margin:0;font-size:14px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--accent);margin-bottom:12px}.stats{display:flex;gap:28px;flex-shrink:0}.stat{padding-left:24px;border-left:1px solid var(--line)}.stat strong{display:block;font-size:28px;font-weight:600}.stat span{font-size:12px;color:var(--muted)}
+.tools{gap:12px}.search-wrap{position:relative;flex:1}.search-wrap span{position:absolute;left:16px;top:12px;color:var(--muted);font-size:22px;pointer-events:none}input{width:100%;min-width:0;padding:14px 16px 14px 46px;background:white;border:1px solid var(--line);border-radius:10px;color:inherit}input::placeholder{color:#788b86}#refresh{background:white;border:1px solid var(--line);border-radius:10px;padding:14px 18px;color:inherit;white-space:nowrap}.filter-row{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:22px 0}.filters{gap:6px;flex-wrap:wrap}.filter{border:1px solid transparent;border-radius:7px;background:transparent;padding:7px 12px;color:var(--muted);font-size:13px}.filter[aria-pressed="true"]{background:#e1eee8;color:#105f51;border-color:#c7dfd5}.meta{font-size:12px;color:var(--muted);text-align:right}#error{color:#923e27;background:#fff0e7;border:1px solid #efd2bf;border-radius:10px;padding:13px 16px;font-size:13px}#error:empty{display:none}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:16px}.card{background:white;border:1px solid var(--line);border-radius:13px;padding:22px;display:flex;flex-direction:column;gap:18px;min-width:0;transition:border-color .15s,box-shadow .15s}.card:hover{border-color:#93bbac;box-shadow:0 5px 18px #224e3e09}.card-top{justify-content:space-between;gap:12px}.service-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:#eef4f1;color:var(--accent);font-size:17px;font-weight:600}.badge{font-size:11px;letter-spacing:.5px;background:#edf5f0;color:#246b50;padding:5px 8px;border-radius:5px}.card h2{font-size:17px;line-height:1.5;margin:0 0 7px;overflow-wrap:anywhere}.details,.notice{font-size:12px;color:var(--muted);line-height:1.6}.card-bottom{justify-content:space-between;border-top:1px solid #edf1ef;padding-top:15px;gap:10px;margin-top:auto}.status{font-size:12px;color:var(--muted)}.status.warn{color:#95601c}.status.bad{color:#ac4936}.card a{font-size:13px;font-weight:600;text-decoration:none}.card a:hover{text-decoration:underline}.empty{grid-column:1/-1;text-align:center;padding:56px 24px;border:1px dashed #c9d8d0;border-radius:13px;color:var(--muted);font-size:14px}.empty strong{display:block;font-size:18px;color:#314f45;margin-bottom:8px}footer{border-top:1px solid var(--line);margin-top:32px;padding-top:20px;font-size:12px;color:var(--muted);line-height:1.8}.footer-label{color:#3c5d52;margin-right:8px}
+@media(max-width:640px){body{padding:22px 18px}.topbar{align-items:flex-start}.host{max-width:45%;font-size:11px}.heading{align-items:flex-start;flex-direction:column;margin-top:30px;gap:22px}h1{font-size:28px}.stats{gap:22px}.stat{padding-left:0;padding-right:22px;border-left:0;border-right:1px solid var(--line)}.stat strong{font-size:24px}.filter-row{align-items:flex-start;flex-direction:column;gap:12px}.meta{text-align:left}#grid{grid-template-columns:1fr}#refresh{padding:14px 12px}.tools{gap:8px}input{font-size:14px}.card{padding:20px}}
+@media(prefers-reduced-motion:reduce){.card{transition:none}}
+[hidden]{display:none!important}.panel{background:white;border:1px solid var(--line);border-radius:13px;padding:24px}.panel h2{font-size:19px;margin:0 0 12px}.panel p{font-size:14px;color:var(--muted)}.docker-toolbar,.docker-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.docker-toolbar{margin:20px 0}.docker-toolbar input{flex:1;min-width:170px;padding:12px 16px}.docker-button{padding:9px 13px;border:1px solid var(--line);border-radius:7px;background:white;color:var(--accent);font-size:13px}.docker-button.danger{color:#a44330}.docker-message{font-size:13px;line-height:1.7;color:var(--muted);overflow-wrap:anywhere}.docker-message.error{color:#a44330}.docker-list{display:grid;gap:12px}.container-row{background:white;border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:20px}.container-info{min-width:0;flex:1}.container-info h2{font-size:16px;margin:0 0 8px;overflow-wrap:anywhere}.container-info p{margin:4px 0;overflow-wrap:anywhere}.container-state{display:inline-block;font-size:12px;color:#246b50;background:#edf5f0;padding:3px 8px;border-radius:5px;margin-left:10px}.container-state.stopped{color:#7f6642;background:#f5eee4}#docker-login input{padding:12px 16px;margin:12px 0;width:100%;max-width:540px;display:block}#docker-login label{font-size:13px}dialog{border:1px solid var(--line);border-radius:13px;width:min(1000px,92vw);padding:24px;color:inherit;max-height:85vh}dialog::backdrop{background:#112e2655}.log-heading{display:flex;justify-content:space-between;align-items:center;gap:14px}.log-heading h2{font-size:18px;overflow-wrap:anywhere}pre{background:#162e2a;color:#e0efe9;border-radius:8px;padding:18px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:55vh;overflow:auto;font:12px/1.7 ui-monospace,Consolas,monospace}@media(max-width:640px){.container-row{align-items:flex-start;flex-direction:column;gap:12px}.panel{padding:18px}.docker-actions{gap:7px}.docker-button{padding:10px 12px}}
+</style>
+<header>
+  <div class="topbar"><div class="brand"><span class="logo" aria-hidden="true">▦</span>SERVICE PORTAL</div><div class="host"><span class="dot" aria-hidden="true"></span><span id="host"></span></div></div>
+  <div class="heading"><div><div class="eyebrow">YOUR SERVER, CONNECTED</div><h1>本机服务导航</h1><p class="intro">这台服务器的网页入口，一处直达。</p></div><div class="stats" aria-label="服务统计"><div class="stat"><strong id="total">—</strong><span>已发现服务</span></div><div class="stat"><strong id="secure">—</strong><span>HTTPS 服务</span></div></div></div>
+</header>
+<main>
+<div id="portal-view">
+  <div class="tools"><div class="search-wrap"><span aria-hidden="true">⌕</span><input id="search" type="search" aria-label="搜索服务名称、端口或协议" placeholder="搜索服务名称、端口或协议…"></div><button id="refresh">刷新列表</button></div>
+  <div class="filter-row"><div class="filters" role="group" aria-label="按协议筛选"><button class="filter" data-scheme="all" aria-pressed="true">全部服务</button><button class="filter" data-scheme="https" aria-pressed="false">HTTPS</button><button class="filter" data-scheme="http" aria-pressed="false">HTTP</button></div><div id="meta" class="meta" role="status" aria-live="polite">正在加载服务…</div></div>
+  <p id="error" role="alert"></p><div id="grid" aria-label="服务列表"></div>
+</div>
+<section id="docker-view" hidden aria-label="Docker 运维">
+  <form id="docker-login" class="panel">
+    <h2>连接 Docker</h2><p>查看容器、读取日志并进行基础运维。请使用管理员配置的访问令牌。</p>
+    <label for="docker-token">访问令牌（仅保留在当前页面，刷新后需重新输入）</label><input id="docker-token" type="password" autocomplete="off" minlength="32" required placeholder="输入 Docker 运维令牌">
+    <button type="submit" class="docker-button" data-docker-command>连接 Docker</button>
+    <p>首次使用需在服务器开启 docker_enabled，并配置令牌和 Docker socket 权限，步骤见 README。</p>
+  </form>
+  <div id="docker-connected" hidden>
+    <div class="docker-toolbar"><input id="docker-search" type="search" aria-label="搜索容器名称、镜像或 ID" placeholder="搜索容器名称、镜像或 ID…"><button id="docker-refresh" class="docker-button" data-docker-command>刷新容器</button><button id="docker-logout" class="docker-button" data-docker-command>断开连接</button></div>
+    <p id="docker-summary" class="docker-message" role="status"></p><div id="docker-list" class="docker-list"></div>
+  </div>
+  <p id="docker-message" class="docker-message" role="status" aria-live="polite"></p>
+  <dialog id="docker-logs" aria-labelledby="logs-title"><div class="log-heading"><h2 id="logs-title">容器日志</h2><button id="logs-close" class="docker-button">关闭</button></div><p id="logs-note" class="docker-message"></p><pre id="logs-content" tabindex="0"></pre></dialog>
+  <dialog id="docker-confirm" aria-labelledby="confirm-title"><h2 id="confirm-title">确认操作</h2><p id="confirm-description" class="docker-message"></p><form method="dialog" class="docker-actions"><button class="docker-button" value="cancel" autofocus>取消</button><button id="confirm-action" class="docker-button danger" value="confirm">确认</button></form></dialog>
+</section>
+</main>
+<footer><span class="footer-label">自动发现 · 每 10 秒更新列表</span>刷新列表读取最近扫描结果。目标服务端口仍需允许访问。</footer>
+<script>
+let services=[],scheme='all',loaded=false;
+const grid=document.getElementById('grid'),search=document.getElementById('search'),button=document.getElementById('refresh');
+document.getElementById('host').textContent=location.hostname;
+function element(tag,className,text){const node=document.createElement(tag);node.className=className;node.textContent=text;return node;}
+function render(){
+  // Keep existing links focused while an automatic update has identical results.
+  const selected=services.filter(s=>(scheme==='all'||s.scheme===scheme)&&`${s.name} ${s.port} ${s.scheme}`.toLowerCase().includes(search.value.trim().toLowerCase()));
+  const key=JSON.stringify([selected,loaded,scheme,search.value]);
+  if(grid.dataset.key===key)return;
+  grid.dataset.key=key;grid.replaceChildren();
+  for(const s of selected){
+    const card=element('article','card','');
+    const top=element('div','card-top','');
+    const icon=element('span','service-icon',String(s.name).slice(0,1).toUpperCase());icon.setAttribute('aria-hidden','true');
+    top.append(icon,element('span','badge',s.scheme.toUpperCase()));
+    const body=element('div','','');body.append(element('h2','',s.name),element('div','details',`端口 ${s.port} · ${s.path}`));
+    const bottom=element('div','card-bottom','');
+    const label=s.status>=500?'服务异常':s.status>=400?(s.status===401||s.status===403?'需要授权':s.status===404?'页面不存在':'请求异常'):s.status>=300?'重定向':'响应正常';
+    bottom.append(element('span',`status${s.status>=500?' bad':s.status>=400?' warn':''}`,`${label} · ${s.status}`));
+    if(s.loopback){body.append(element('div','notice','仅本机可访问，远程无法直接访问'));}
+    else{
+      const link=element('a','','打开服务 ↗');
+      const url=new URL(`${s.scheme}://${location.hostname}:${s.port}/`);
+      const parsed=new URL(s.path,url);url.pathname=parsed.pathname;url.search=parsed.search;url.hash=parsed.hash;
+      link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.setAttribute('aria-label',`打开 ${s.name}（新窗口）`);link.title=url.href;bottom.append(link);
+    }
+    card.append(top,body,bottom);grid.append(card);
+  }
+  if(!selected.length){const empty=element('div','empty','');empty.append(element('strong','',!loaded?'正在发现服务':services.length?'没有匹配的服务':'暂未发现网页服务'),element('span','',!loaded?'首次扫描需要一点时间，请稍候。':services.length?'试试其他关键词，或切换为全部服务。':'请检查服务监听地址与排除端口配置。'));grid.append(empty);}
+}
+async function refresh(){
+  if(button.disabled)return;
+  button.disabled=true;button.textContent='更新中…';
+  try{
+    const response=await fetch('/api/services',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const data=await response.json();services=data.services;loaded=Boolean(data.updated_at||data.error);render();
+    document.getElementById('total').textContent=services.length;
+    document.getElementById('secure').textContent=services.filter(s=>s.scheme==='https').length;
+    document.getElementById('meta').textContent=`${data.updated_at?'最近扫描 '+new Date(data.updated_at).toLocaleTimeString():'等待首次扫描'} · 扫描间隔 ${data.scan_interval} 秒`;
+    document.getElementById('error').textContent=data.error||'';
+  }catch(e){document.getElementById('error').textContent=loaded?'连接失败，当前保留上次结果；请稍后重试。':'导航服务连接失败，请稍后重试。';}
+  finally{button.disabled=false;button.textContent='刷新列表';}
+}
+search.addEventListener('input',render);
+document.querySelectorAll('[data-scheme]').forEach(filter=>filter.addEventListener('click',()=>{scheme=filter.dataset.scheme;document.querySelectorAll('[data-scheme]').forEach(item=>item.setAttribute('aria-pressed',String(item===filter)));render();}));
+button.addEventListener('click',refresh);
+const dockerView=location.pathname==='/docker';
+document.getElementById('portal-view').hidden=dockerView;
+document.getElementById('docker-view').hidden=!dockerView;
+if(!dockerView){render();refresh();setInterval(()=>{if(!document.hidden)refresh();},10000);}
+else{
+  document.title='Docker 运维 · 服务导航';document.querySelector('h1').textContent='Docker 运维';
+  document.querySelector('.intro').textContent='容器状态、运行日志与日常操作，集中管理。';
+  document.querySelector('.eyebrow').textContent='CONTAINERS, UNDER CONTROL';
+  document.querySelector('.stats').hidden=true;
+  document.querySelector('footer').textContent='Docker 操作会影响实际容器。列表手动刷新，日志最多读取最近 200 行 / 256 KiB。';
+}
+let dockerToken='',containers=[],dockerBusy=false;
+const dockerList=document.getElementById('docker-list'),dockerSearch=document.getElementById('docker-search'),logsDialog=document.getElementById('docker-logs');
+function dockerMessage(message,error=false){const node=document.getElementById('docker-message');node.textContent=message;node.className='docker-message'+(error?' error':'');}
+function disconnectDocker(){dockerToken='';containers=[];dockerList.replaceChildren();document.getElementById('docker-connected').hidden=true;document.getElementById('docker-login').hidden=false;document.getElementById('docker-token').value='';document.getElementById('logs-content').textContent='';logsDialog.close();}
+function setDockerBusy(busy){dockerBusy=busy;document.querySelectorAll('[data-docker-command]').forEach(node=>{node.disabled=busy||node.dataset.unavailable==='true';});}
+async function dockerRequest(path,method='GET'){
+  if(dockerBusy)throw new Error('正在执行其他请求，请稍后重试。');
+  setDockerBusy(true);
+  try{
+    const response=await fetch(path,{method,headers:{Authorization:`Bearer ${dockerToken}`},cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(25000)});
+    const data=await response.json();
+    if(!response.ok){if(response.status===401)disconnectDocker();throw new Error(data.error||`请求失败（${response.status}）`);}
+    return data;
+  }catch(error){if(error.name==='TimeoutError'||error.name==='TypeError')throw new Error('连接失败或超时。操作可能已执行，请刷新容器状态后再决定是否重试。');throw error;}
+  finally{setDockerBusy(false);}
+}
+async function refreshDocker(){
+  const data=await dockerRequest('/api/docker/containers');containers=data.containers;renderDocker();
+  document.getElementById('docker-login').hidden=true;document.getElementById('docker-connected').hidden=false;
+  document.getElementById('docker-token').value='';
+  document.getElementById('docker-summary').textContent=`共 ${containers.length} 个容器 · ${containers.filter(c=>c.state==='running').length} 个运行中 · 更新于 ${new Date().toLocaleTimeString()}`;
+}
+function renderDocker(){
+  dockerList.replaceChildren();
+  const selected=containers.filter(c=>`${c.name} ${c.image} ${c.id}`.toLowerCase().includes(dockerSearch.value.trim().toLowerCase()));
+  for(const container of selected){
+    const row=element('article','container-row',''),info=element('div','container-info',''),heading=element('h2','',container.name);
+    const stateNames={running:'运行中',exited:'已停止',created:'已创建',paused:'已暂停',restarting:'重启中',removing:'移除中',dead:'异常'};
+    heading.append(element('span',`container-state${container.state==='running'?'':' stopped'}`,stateNames[container.state]||container.state));
+    info.append(heading,element('p','details',`${container.image} · ${container.id.slice(0,12)}`),element('p','details',container.status));
+    if(container.ports)info.append(element('p','details',`发布端口 ${container.ports}`));
+    const actions=element('div','docker-actions','');
+    for(const [action,label] of [['logs','日志'],['start','启动'],['stop','停止'],['restart','重启']]){
+      const control=element('button','docker-button'+(action==='stop'?' danger':''),label);control.type='button';control.dataset.dockerCommand='';
+      control.setAttribute('aria-label',`${label} ${container.name}`);
+      control.dataset.unavailable=String(action==='start'?!['exited','created'].includes(container.state):action==='stop'||action==='restart'?container.state!=='running':false);
+      control.disabled=dockerBusy||control.dataset.unavailable==='true';
+      control.addEventListener('click',()=>runDockerAction(container,action,label));actions.append(control);
+    }
+    row.append(info,actions);dockerList.append(row);
+  }
+  if(!selected.length)dockerList.append(element('div','empty',containers.length?'没有匹配的容器。':'Docker 中暂无容器。'));
+}
+async function runDockerAction(container,action,label){
+  if(dockerBusy)return;
+  if((action==='stop'||action==='restart')&&!await confirmDockerAction(container,label))return;
+  dockerMessage(`正在${label}「${container.name}」…`);
+  try{
+    const data=await dockerRequest(`/api/docker/containers/${container.id}/${action}`,action==='logs'?'GET':'POST');
+    if(action==='logs'){
+      document.getElementById('logs-title').textContent=`${container.name} · 最近日志`;
+      document.getElementById('logs-note').textContent=data.truncated?'日志超过 256 KiB，显示截取内容。':'最近 200 行，不实时追踪。';
+      document.getElementById('logs-content').textContent=data.logs||'暂无日志（或容器日志驱动不支持读取）。';logsDialog.showModal();dockerMessage('');
+    }else{dockerMessage(`${label}请求已完成，正在更新容器状态…`);await refreshDocker();dockerMessage(`${label}请求已完成，列表已更新。`);}
+  }catch(error){dockerMessage(error.message,true);}
+}
+function confirmDockerAction(container,label){
+  const dialog=document.getElementById('docker-confirm');dialog.returnValue='cancel';
+  document.getElementById('confirm-title').textContent=`确认${label}容器`;
+  document.getElementById('confirm-description').textContent=`${label}「${container.name}」会中断该容器提供的服务。`;
+  document.getElementById('confirm-action').textContent=`确认${label}`;
+  dialog.showModal();return new Promise(resolve=>dialog.addEventListener('close',()=>resolve(dialog.returnValue==='confirm'),{once:true}));
+}
+document.getElementById('docker-login').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(location.protocol!=='https:'&&!['localhost','127.0.0.1','[::1]'].includes(location.hostname)){dockerMessage('请通过 HTTPS 或 localhost 访问 Docker 运维，避免令牌明文传输。',true);return;}
+  dockerToken=document.getElementById('docker-token').value.trim();dockerMessage('正在连接 Docker…');
+  try{await refreshDocker();dockerMessage('已连接。');}catch(error){dockerToken='';dockerMessage(error.message,true);}
+});
+dockerSearch.addEventListener('input',renderDocker);
+document.getElementById('docker-refresh').addEventListener('click',async()=>{try{await refreshDocker();dockerMessage('容器列表已更新。');}catch(error){dockerMessage(error.message,true);}});
+document.getElementById('docker-logout').addEventListener('click',()=>{disconnectDocker();dockerMessage('已断开连接，令牌和日志已清除。');});
+document.getElementById('logs-close').addEventListener('click',()=>logsDialog.close());
+</script>
+</html>

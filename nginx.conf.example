@@ -1,0 +1,14 @@
+# 可选：已有 Nginx 时，将应用配置 bind 改成 127.0.0.1、port 改成 9080。
+# 替换现有对应 server，或选择独立域名；不要与已有 default_server 冲突。
+server {
+    listen 80;
+    server_name portal.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:9080;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
