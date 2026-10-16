@@ -1,6 +1,6 @@
 # Ubuntu 本机服务导航
 
-自动读取 Ubuntu 的 TCP 监听端口，探测 HTTP/HTTPS，展示网页标题、端口、响应状态与访问链接。Python 标准库实现，无 pip 依赖、无需 Docker 或数据库。适用于 Ubuntu 22.04 / 24.04，Python 3.10+，systemd。
+自动读取 Ubuntu 的 TCP 监听端口，探测 HTTP/HTTPS，展示网页标题、完整访问网址与响应状态；服务名称即入口链接。Python 标准库实现，无 pip 依赖、无需 Docker 或数据库。适用于 Ubuntu 22.04 / 24.04，Python 3.10+，systemd。
 
 页面支持按名称、端口搜索与 HTTP/HTTPS 筛选，展示服务总数、HTTPS 数量及响应状态，适配手机访问。
 
