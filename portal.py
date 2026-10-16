@@ -195,6 +195,19 @@ def docker_operation(method, path):
     return {'ok': True}
 
 
+def refresh_state(cfg, state, lock):
+    """One discovery round. A failed scan keeps the last successful result on screen."""
+    try:
+        services = scan(cfg)
+        with lock:
+            state.update(services=services, updated_at=datetime.datetime.now(datetime.timezone.utc).isoformat(), error=None, scanning=False)
+        logging.info('Discovered %s web services', len(services))
+    except Exception:
+        logging.exception('Discovery failed')
+        with lock:
+            state.update(error='端口发现失败，请管理员检查 journalctl 日志；当前显示上次成功结果。', scanning=False)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', default=str(Path(__file__).with_name('config.json')))
@@ -210,15 +223,7 @@ def main():
 
     def update():
         while True:
-            try:
-                services = scan(cfg)
-                with lock:
-                    state.update(services=services, updated_at=datetime.datetime.now(datetime.timezone.utc).isoformat(), error=None, scanning=False)
-                logging.info('Discovered %s web services', len(services))
-            except Exception:
-                logging.exception('Discovery failed')
-                with lock:
-                    state.update(error='端口发现失败，请管理员检查 journalctl 日志；当前显示上次成功结果。', scanning=False)
+            refresh_state(cfg, state, lock)
             threading.Event().wait(cfg['scan_interval'])
 
     page = Path(__file__).with_name('index.html').read_bytes()
