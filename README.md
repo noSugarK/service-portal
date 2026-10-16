@@ -73,10 +73,10 @@ sudo journalctl -u service-portal -n 50 --no-pager
 
 ## 3. 80 已有 Nginx 的情况（可选）
 
-将运行配置修改为 `"bind": "127.0.0.1"`、`"port": 9080`，重启服务。参考 `nginx.conf.example` 将导航页面挂到独立域名，并将域名解析到服务器 IP；替换示例中的 `portal.example.com`。
+将运行配置修改为 `"bind": "127.0.0.1"`、`"port": 9080`，重启服务。参考 `deploy/nginx.conf.example` 将导航页面挂到独立域名，并将域名解析到服务器 IP；替换示例中的 `portal.example.com`。
 
 ```bash
-sudo cp nginx.conf.example /etc/nginx/sites-available/service-portal
+sudo cp deploy/nginx.conf.example /etc/nginx/sites-available/service-portal
 sudo editor /etc/nginx/sites-available/service-portal
 sudo ln -s /etc/nginx/sites-available/service-portal /etc/nginx/sites-enabled/service-portal
 sudo nginx -t

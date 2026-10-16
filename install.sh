@@ -37,7 +37,7 @@ install -m 644 portal.py index.html /opt/service-portal/
 if [[ ! -f /etc/service-portal/config.json ]]; then
   install -m 644 config.json /etc/service-portal/config.json
 fi
-install -m 644 service-portal.service /etc/systemd/system/service-portal.service
+install -m 644 deploy/service-portal.service /etc/systemd/system/service-portal.service
 docker_override=/etc/systemd/system/service-portal.service.d/90-service-portal-docker.conf
 if [[ "$docker_enabled" == 1 ]]; then
   install -d -m 755 /etc/systemd/system/service-portal.service.d

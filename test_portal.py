@@ -223,7 +223,8 @@ LISTEN 0 128 [::]:3000 *:*'''
         source = Path(__file__).parent
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name in ('portal.py', 'index.html', 'service-portal.service'):
+            for name in ('portal.py', 'index.html', 'deploy/service-portal.service'):
+                (root / name).parent.mkdir(parents=True, exist_ok=True)
                 (root / name).write_bytes((source / name).read_bytes())
             script = (source / 'install.sh').read_text()
             script = script.replace('if [[ "${EUID}" -ne 0 ]]; then', 'if false; then')
