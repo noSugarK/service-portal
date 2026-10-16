@@ -1,4 +1,4 @@
-"""Run: python3 -m unittest -v"""
+"""Run from the project root: python3 -m unittest discover tests -v"""
 import json
 import os
 import socket
@@ -15,12 +15,16 @@ from unittest.mock import patch
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import portal
+
+ROOT = Path(portal.__file__).parent
 
 
 class Tests(unittest.TestCase):
     def setUp(self):
-        self.cfg = portal.load_config(Path(__file__).with_name('config.json'))
+        self.cfg = portal.load_config(ROOT / 'config.json')
 
     def test_ss_ipv4_ipv6_and_loopback(self):
         rows = '''LISTEN 0 128 0.0.0.0:3000 0.0.0.0:*
@@ -112,6 +116,29 @@ LISTEN 0 128 [::]:3000 *:*'''
             http.return_value.getresponse.side_effect = portal.http.client.BadStatusLine('SSH-2.0')
             self.assertIsNone(portal.probe(('127.0.0.1', 22, False), self.cfg))
 
+    def test_update_keeps_last_result_when_scan_fails(self):
+        state = dict(services=[], updated_at=None, error=None, scanning=True)
+        lock = threading.Lock()
+        found = [dict(port=3000, scheme='http', name='面板', status=200, path='/', loopback=False, bind_address='0.0.0.0')]
+        with patch('portal.scan', return_value=found):
+            portal.refresh_state(self.cfg, state, lock)
+        self.assertEqual(state['services'], found)
+        self.assertEqual((state['error'], state['scanning']), (None, False))
+        succeeded_at = state['updated_at']
+        self.assertIsNotNone(succeeded_at)
+        # A failing scan must not blank the page or claim a fresher scan time.
+        with patch('portal.scan', side_effect=OSError('ss missing')), self.assertLogs(level='ERROR'):
+            portal.refresh_state(self.cfg, state, lock)
+        self.assertEqual(state['services'], found)
+        self.assertEqual(state['updated_at'], succeeded_at)
+        self.assertFalse(state['scanning'])
+        self.assertIn('端口发现失败', state['error'])
+        # Recovery clears the error instead of leaving a stale warning on screen.
+        with patch('portal.scan', return_value=[]):
+            portal.refresh_state(self.cfg, state, lock)
+        self.assertEqual((state['services'], state['error']), ([], None))
+        self.assertNotEqual(state['updated_at'], succeeded_at)
+
     @contextmanager
     def running_portal(self, docker=False):
         with socket.socket() as sock:
@@ -124,7 +151,7 @@ LISTEN 0 128 [::]:3000 *:*'''
             # Isolate platform-specific ss discovery; exercise the real HTTP process.
             command = 'import portal; portal.scan=lambda cfg: []; portal.docker_operation=lambda method,path: dict(method=method,path=path); portal.main()'
             process = subprocess.Popen([sys.executable, '-c', command, '--config', str(path)],
-                                       cwd=Path(__file__).parent, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                       cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                        env=dict(os.environ, SERVICE_PORTAL_DOCKER_TOKEN='a' * 40))
             try:
                 base = f'http://127.0.0.1:{port}'
@@ -220,7 +247,7 @@ LISTEN 0 128 [::]:3000 *:*'''
 
     @unittest.skipUnless(os.name == 'posix', 'Installer check requires Linux / WSL')
     def test_installer_manages_docker_permission_and_preserves_config(self):
-        source = Path(__file__).parent
+        source = ROOT
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in ('portal.py', 'index.html', 'deploy/service-portal.service'):

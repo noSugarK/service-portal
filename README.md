@@ -11,7 +11,7 @@
 ```bash
 cd ~/service-portal
 sudo ss -ltn 'sport = :80'
-python3 -m unittest -v
+python3 -m unittest discover tests -v
 sudo bash install.sh
 ```
 
@@ -153,8 +153,8 @@ Docker socket 控制权限通常等同于主机 root 权限。所有 Docker API 
 ## 7. 验证与排障
 
 ```bash
-python3 -m unittest -v
-node test_ui.js  # 可选：前端访问地址策略检查，仅开发验证需要 Node.js
+python3 -m unittest discover tests -v
+node tests/test_ui.js  # 可选：前端访问地址策略检查，仅开发验证需要 Node.js
 sudo ss -H -ltn
 curl http://127.0.0.1/api/services
 sudo journalctl -u service-portal -n 100 --no-pager

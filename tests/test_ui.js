@@ -1,9 +1,9 @@
-// Run: node test_ui.js (Node.js is only needed for this development check).
+// Run from the project root: node tests/test_ui.js (Node.js is only needed for this check).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
-const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const script = html.split('<script>')[1].split('</script>')[0];
 new vm.Script(script);
 const policy = script.slice(script.indexOf('function dockerTransportAllowed('), script.indexOf('\nfunction disconnectDocker('));
